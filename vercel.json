@@ -3,13 +3,7 @@
   "builds": [
     {
       "src": "api/news.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "node_modules/puppeteer-core/**",
-          "node_modules/@sparticuz/chromium/**"
-        ]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
