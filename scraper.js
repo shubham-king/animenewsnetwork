@@ -46,7 +46,7 @@ async function scrapeNews() {
     // Navigate with random delay
     await page.goto(ANN_URL, {
       waitUntil: 'networkidle2',
-      timeout: 60000
+      timeout: 90000
     });
     
     // Wait for dynamic content
