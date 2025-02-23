@@ -1,12 +1,24 @@
-// vercel.json
 {
+  "version": 2,
   "builds": [
     {
-      "src": "/*.js",
-      "use": "@vercel/node"
+      "src": "api/news.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "node_modules/puppeteer-core/**",
+          "node_modules/cheerio/**"
+        ]
+      }
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/news" }
-  ]
+    {
+      "src": "/api/news",
+      "dest": "/api/news"
+    }
+  ],
+  "env": {
+    "PUPPETEER_EXECUTABLE_PATH": "@chromium-binary"
+  }
 }
