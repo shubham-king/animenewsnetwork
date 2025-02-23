@@ -7,36 +7,34 @@ const LRU = require('lru-cache');
 const app = express();
 app.use(cors());
 
-// Configure cache (1 hour TTL)
-const cache = new LRU({
-  max: 100,
-  ttl: 1000 * 60 * 60,
-});
+// Cache configuration (30 minutes)
+const cache = new LRU({ max: 100, ttl: 1000 * 60 * 30 });
 
-// Mobile user agent to bypass bot detection
-const MOBILE_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-  'Accept-Language': 'en-US,en;q=0.9'
+// 2024 Headers to bypass blocking
+const SAFE_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+  'Accept-Language': 'en-US,en;q=0.8',
+  'Referer': 'https://www.google.com/'
 };
 
 // Updated 2024 Selectors
 const SELECTORS = {
   container: '.herald.box.news',
-  title: '.header a',
+  title: 'div.header h3 a',
   date: 'time',
-  author: '.byline .editor',
-  link: '.header a'
+  author: 'div.byline span.editor',
+  link: 'div.header a'
 };
 
-async function scrapeLatestNews() {
+async function fetchNews() {
   try {
     const { data } = await axios.get('https://www.animenewsnetwork.com/news/', {
-      headers: MOBILE_HEADERS,
-      timeout: 10000
+      headers: SAFE_HEADERS,
+      timeout: 15000
     });
 
     const $ = cheerio.load(data);
-    const news = [];
+    const newsItems = [];
 
     $(SELECTORS.container).each((i, el) => {
       const $el = $(el);
@@ -46,39 +44,43 @@ async function scrapeLatestNews() {
       const author = $el.find(SELECTORS.author).text().trim();
 
       if (title && path) {
-        news.push({
+        newsItems.push({
           title,
           url: `https://www.animenewsnetwork.com${path}`,
           date: date || new Date().toISOString(),
           author: author || 'ANN Staff',
-          timestamp: new Date(date).getTime()
+          timestamp: new Date(date).getTime() || Date.now()
         });
       }
     });
 
-    return news.slice(0, 10);
+    return newsItems.slice(0, 10);
   } catch (error) {
-    console.error('Scraping error:', error);
-    throw new Error('Failed to fetch news');
+    console.error('Scraping failed:', error.message);
+    return [];
   }
 }
 
 app.get('/api/news', async (req, res) => {
   try {
-    // Check cache first
-    if (cache.has('latest')) {
-      return res.json(cache.get('latest'));
+    if (cache.has('news')) {
+      return res.json(cache.get('news'));
     }
 
-    // Scrape fresh data
-    const news = await scrapeLatestNews();
-    cache.set('latest', news);
-    
-    res.json(news);
+    const news = await fetchNews();
+    if (news.length > 0) {
+      cache.set('news', news);
+      res.json(news);
+    } else {
+      res.status(503).json({ 
+        error: 'News temporarily unavailable',
+        cached: cache.get('news') || []
+      });
+    }
   } catch (error) {
     res.status(500).json({
-      error: error.message,
-      retryAfter: 300 // 5 minutes
+      error: 'Server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : null
     });
   }
 });
