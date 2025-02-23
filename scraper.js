@@ -1,3 +1,5 @@
+// Add at the top
+const chromium = require('@sparticuz/chromium');
 const express = require('express');
 const cors = require('cors');
 const puppeteer = require('puppeteer-core');
@@ -10,15 +12,15 @@ app.use(cors());
 const ANN_URL = 'https://www.animenewsnetwork.com/news/';
 const CACHE_TTL = 3600000; // 1 hour
 const PUPPETEER_OPTIONS = {
-  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-  headless: 'new',
+  executablePath: await chromium.executablePath(),
+  headless: chromium.headless,
   args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
+    ...chromium.args,
     '--disable-dev-shm-usage',
-    '--disable-blink-features=AutomationControlled',
     '--disable-web-security'
-  ]
+  ],
+  defaultViewport: chromium.defaultViewport,
+  ignoreHTTPSErrors: true
 };
 
 // State management
