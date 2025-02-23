@@ -1,15 +1,15 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/news.js",
-      "use": "@vercel/node"
+  "builds": [{
+    "src": "api/news.js",
+    "use": "@vercel/node",
+    "config": { 
+      "includeFiles": ["node_modules/**/*"],
+      "maxLambdaSize": "15mb"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/news",
-      "dest": "/api/news"
-    }
-  ]
+  }],
+  "routes": [{
+    "src": "/api/news",
+    "dest": "/api/news"
+  }]
 }
