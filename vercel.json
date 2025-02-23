@@ -7,7 +7,7 @@
       "config": {
         "includeFiles": [
           "node_modules/puppeteer-core/**",
-          "node_modules/cheerio/**"
+          "node_modules/@sparticuz/chromium/**"
         ]
       }
     }
@@ -17,8 +17,5 @@
       "src": "/api/news",
       "dest": "/api/news"
     }
-  ],
-  "env": {
-    "PUPPETEER_EXECUTABLE_PATH": "@chromium-binary"
-  }
+  ]
 }
