@@ -1,12 +1,12 @@
+// vercel.json
 {
-  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/news" }],
-  "headers": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET" }
-      ]
+      "src": "/*.js",
+      "use": "@vercel/node"
     }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/news" }
   ]
 }
